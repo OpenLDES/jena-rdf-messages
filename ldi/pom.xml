@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.openldes</groupId>
+    <artifactId>jena-messages</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>jena-messages-ldi</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>RDF Messages for Linked Data Interactions (LDI): an adapter that reads message logs and an output that writes them</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.openldes</groupId>
+      <artifactId>jena-messages-parsers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openldes.ldi</groupId>
+      <artifactId>ldi-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+    </dependency>
+  </dependencies>
+</project>
