@@ -44,29 +44,29 @@
     <maven.compiler.release>21</maven.compiler.release>
 
     <!-- Maven plugin versions -->
-    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-    <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
-    <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
-    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+    <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+    <maven-failsafe-plugin.version>3.6.1</maven-failsafe-plugin.version>
+    <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+    <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
-    <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
+    <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
+    <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
+    <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
     <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
-    <jacoco.version>0.8.12</jacoco.version>
+    <jacoco.version>0.8.16</jacoco.version>
 
     <!-- Dependencies -->
     <!-- 6.3.0-SNAPSHOT: VERSION support in the N-Triples and N-Quads parsers (GH-2805) is not in a release yet -->
     <jena.version>6.3.0-SNAPSHOT</jena.version>
     <jelly.version>4.0.1</jelly.version>
     <ldi-api.version>3.2.2</ldi-api.version>
-    <slf4j.version>2.0.17</slf4j.version>
+    <slf4j.version>2.0.20</slf4j.version>
 
     <!-- Testing -->
-    <junit-jupiter.version>5.13.4</junit-jupiter.version>
-    <assertj.version>3.27.3</assertj.version>
+    <junit-jupiter.version>6.1.3</junit-jupiter.version>
+    <assertj.version>3.27.7</assertj.version>
 
     <!-- SonarCloud, as in the other OpenLDES repositories -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
