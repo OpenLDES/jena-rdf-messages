@@ -65,7 +65,7 @@
     <slf4j.version>2.0.17</slf4j.version>
 
     <!-- Testing -->
-    <junit-jupiter.version>5.13.4</junit-jupiter.version>
+    <junit-jupiter.version>6.1.3</junit-jupiter.version>
     <assertj.version>3.27.3</assertj.version>
 
     <!-- SonarCloud, as in the other OpenLDES repositories -->
