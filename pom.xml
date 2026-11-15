@@ -66,7 +66,7 @@
 
     <!-- Testing -->
     <junit-jupiter.version>5.13.4</junit-jupiter.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
 
     <!-- SonarCloud, as in the other OpenLDES repositories -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
