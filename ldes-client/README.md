@@ -73,6 +73,31 @@ Not implemented yet: the ordering rule for members that finalize a transaction, 
 
 ## Performance
 
-The parsers module has the serialization benchmark ([parsers/README.md](../parsers/README.md#performance)): Jelly-RDF
-pages parse 3 to 4 times faster than TriG or N-Quads pages. Replication throughput is bounded by the parser of the page
-serialization, as the merge itself holds only the next message of every open page.
+Replication throughput of this client, on the workload of the JavaScript ldes-client's
+[performance suite](https://github.com/rdf-connect/ldes-client/tree/main/perf): 20,000 synthetic members of 8 triples
+(a type, a timestamp, scalar properties and a nested blank node), published as LDES 2.0 pages in TriG and in Jelly-RDF,
+served over loopback HTTP without latency or compression. Default client settings, every member checked. Measured on 15
+November 2026 on an Intel Core i7-1265U with OpenJDK 21.0.13; medians.
+
+| Data pages × members/page | TriG, fresh JVM | Jelly, fresh JVM | TriG, after start-up | Jelly, after start-up |
+| --- | ---: | ---: | ---: | ---: |
+| 200 × 100 | 12,256 members/s | 13,420 members/s | 92,079 members/s | 96,181 members/s |
+| 20 × 1,000 | 13,906 members/s | 16,782 members/s | 102,436 members/s | 126,977 members/s |
+| 4 × 5,000 | 14,451 members/s | 15,737 members/s | 108,295 members/s | 147,091 members/s |
+| 1 × 20,000 | 14,550 members/s | 14,282 members/s | 126,903 members/s | 149,148 members/s |
+
+* **Fresh JVM** is one replication in a new process, as the command line client runs: timing starts when the client is
+  constructed, after JVM startup. It is dominated by loading Jena and compiling the client (about 0.45 s to the first
+  member), so it is a cold-start figure, not the client's speed.
+* **After start-up** is the same replication repeated in one JVM with a fresh client each time, after 8 warm-up
+  replications: what a long-running client or pipeline gets. Members arrive within 10 ms of starting.
+
+Multiply by 8 for triples per second. To compare with LDES 1.0: the JavaScript client's
+[published results](https://github.com/rdf-connect/ldes-client/blob/main/perf/results/README.md) use the same members
+and layouts, in fresh Node.js processes. There, the LDES 1.0 (Turtle, TREE) version of these feeds replicates at 11,000
+to 16,000 members/s with the client of the `experiment-ldes-2.0` branch, and at 570 to 13,500 members/s with the
+`main` branch of 5 November 2026 (slowest on large pages); the LDES 2.0 version at 40,000 to 68,000 members/s.
+
+[perf/compare-js.mjs](perf/compare-js.mjs) produces these numbers, side by side with the JavaScript client's LDES 2.0
+numbers on byte-identical feeds; [perf/README.md](perf/README.md) has the method and the comparison. For the speed of the
+parsers alone, see the [parsers benchmark](../parsers/README.md#performance).
