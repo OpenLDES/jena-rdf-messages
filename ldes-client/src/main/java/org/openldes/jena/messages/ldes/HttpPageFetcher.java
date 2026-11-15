@@ -16,6 +16,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.jena.atlas.web.ContentType;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.sys.JenaSystem;
 import org.openldes.jena.messages.MessageLog;
 import org.openldes.jena.messages.MessageVersions;
 import org.openldes.jena.messages.RDFMessagesParser;
@@ -35,6 +36,11 @@ import org.slf4j.LoggerFactory;
 public final class HttpPageFetcher implements PageFetcher {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HttpPageFetcher.class);
+
+	static {
+		// The media type of a Jelly-RDF page is only known after Jena (and so jelly-jena) is initialized
+		JenaSystem.init();
+	}
 
 	/** The status codes that are retried with back-off. */
 	public static final Set<Integer> RETRY_CODES = Set.of(408, 425, 429, 500, 502, 503, 504);

@@ -32,6 +32,7 @@ import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.riot.system.SyntaxLabels;
 import org.apache.jena.sparql.util.Context;
+import org.apache.jena.sys.JenaSystem;
 import org.openldes.jena.messages.lang.MessageFramer;
 
 /**
@@ -52,6 +53,11 @@ import org.openldes.jena.messages.lang.MessageFramer;
  * current message. The pull-based {@link #iterator()} reads ahead by at most {@link #bufferedMessages(int)} messages.
  */
 public final class RDFMessagesParser {
+
+	static {
+		// Media types and file extensions of other modules (Jelly-RDF) are only known after Jena is initialized
+		JenaSystem.init();
+	}
 
 	/** The default number of messages that {@link #iterator()} reads ahead. */
 	public static final int DEFAULT_BUFFERED_MESSAGES = 512;

@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.apache.jena.riot.Lang;
+import org.apache.jena.sys.JenaSystem;
 import org.openldes.jena.messages.jelly.JellySupport;
 import org.openldes.jena.messages.lang.ReaderRDFXMLMessages;
 import org.openldes.jena.messages.lang.RiotMessageReaders;
@@ -24,6 +25,8 @@ public final class MessageReaders {
 	private static final Map<Lang, Supplier<MessageReader>> READERS = new ConcurrentHashMap<>();
 
 	static {
+		// Serializations of other modules (Jelly-RDF) are registered with Jena when its subsystems are initialized
+		JenaSystem.init();
 		register(Lang.TURTLE, RiotMessageReaders::turtle);
 		register(Lang.TRIG, RiotMessageReaders::trig);
 		register(Lang.NTRIPLES, RiotMessageReaders::ntriples);
