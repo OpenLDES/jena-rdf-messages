@@ -31,7 +31,7 @@ adapter and output). Every module has its own README.
 * Dependencies are kept to Apache Jena, SLF4J and the optional integrations (Jelly-RDF, the LDI API). Logging goes
   through SLF4J; the library never configures a logging backend.
 * The parsers derived from Apache Jena's RIOT parsers keep the Apache license header and state what they derive from
-  (see [NOTICE](NOTICE)). All other files are MIT licensed.
+  (see [NOTICE](NOTICE)). All other files are licensed under the EUPL v1.2.
 
 ## Quality
 

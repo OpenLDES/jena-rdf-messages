@@ -36,5 +36,5 @@ and [WORKFLOWS.md](WORKFLOWS.md) for the GitHub Actions workflows.
 
 ## License
 
-MIT, © 2026 Ghent University – IMEC. The parsers derived from Apache Jena keep their Apache 2.0 header (see
-[NOTICE](NOTICE)); the vendored test suite keeps its W3C license.
+[EUPL v1.2](LICENSE), like the rest of the OpenLDES stack. The parsers derived from Apache Jena keep their Apache 2.0
+header (see [NOTICE](NOTICE)); the vendored test suite keeps its W3C license.
