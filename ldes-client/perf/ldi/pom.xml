@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The LDES 1.0 client of Linked Data Interactions (LDI), as a child process of the cross-client benchmark in
+  ldes-client/perf. A standalone project, not a module of this repository's build: LDI 3.2.2 is built on Apache
+  Jena 6.2.0, this repository on Jena 6.3.0-SNAPSHOT, and each client runs on its own classpath.
+
+    mvn -f ldes-client/perf/ldi/pom.xml package
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.openldes</groupId>
+  <artifactId>jena-messages-perf-ldi-client</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <description>Replicates an LDES 1.0 feed with the LDI LDES client, wired as LDIO's Ldio:LdesClient wires it</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>
+    <ldi.version>3.2.2</ldi.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.openldes.client</groupId>
+      <artifactId>tree-node-supplier</artifactId>
+      <version>${ldi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openldes.client</groupId>
+      <artifactId>event-stream-properties-fetcher</artifactId>
+      <version>${ldi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openldes.ldi</groupId>
+      <artifactId>request-executor</artifactId>
+      <version>${ldi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.17</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.0</version>
+      </plugin>
+      <plugin>
+        <!-- The runtime classpath in target/lib, for java -cp target/classes:target/lib/* -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.8.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

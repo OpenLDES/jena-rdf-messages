@@ -1,6 +1,7 @@
-// Replicates identical LDES 2.0 feeds with the JavaScript ldes-client and with this repository's Java client.
-// See README.md in this directory for the method. Run from the repository root:
-//   node ldes-client/perf/compare-js.mjs --js-client ../ldes-client
+// Replicates the same members, published as LDES 1.0 and as LDES 2.0 feeds, with three clients: the JavaScript
+// ldes-client (both versions), the LDES client of Linked Data Interactions (LDI, LDES 1.0) and this repository's Java
+// client (LDES 2.0). See README.md in this directory for the method. Run from the repository root:
+//   node ldes-client/perf/compare-clients.mjs --js-client ../ldes-client
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
@@ -13,9 +14,10 @@ import { parseArgs } from "node:util";
 const { values: options } = parseArgs({
     options: {
         "js-client": { type: "string", default: "../ldes-client" },
+        clients: { type: "string", default: "js,java,ldi" },
         members: { type: "string", default: "20000" },
         "page-sizes": { type: "string", default: "100,1000,5000,20000" },
-        formats: { type: "string", default: "trig,jelly" },
+        formats: { type: "string", default: "ldes1,trig,jelly" },
         repeats: { type: "string", default: "5" },
         warmups: { type: "string", default: "1" },
         delay: { type: "string", default: "0" },
@@ -42,7 +44,11 @@ const warm = iterations > 1;
 const pageSizes = [...new Set(options["page-sizes"].split(",").map((s) => Math.min(Number(s), members)))];
 if (![members, repeats, ...pageSizes].every((v) => Number.isSafeInteger(v) && v > 0) || ![warmups, delayMs].every((v) => Number.isSafeInteger(v) && v >= 0))
     throw new Error("Members, page sizes and repeats must be positive; warmups and delay non-negative integers");
-if (!formats.every((f) => ["trig", "jelly"].includes(f))) throw new Error("Formats: trig and/or jelly (the Java client reads LDES 2.0 only)");
+// The formats every client reads: ldes1 is the LDES 1.0 feed (TREE, Turtle), trig and jelly the LDES 2.0 feeds
+const SUPPORTED = { js: ["ldes1", "trig", "jelly"], java: ["trig", "jelly"], ldi: ["ldes1"] };
+const clients = options.clients.split(",");
+if (!clients.every((c) => c in SUPPORTED)) throw new Error("Clients: js, java and/or ldi");
+if (!formats.every((f) => ["ldes1", "trig", "jelly"].includes(f))) throw new Error("Formats: ldes1, trig and/or jelly");
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const module = path.resolve(here, "..");
@@ -51,12 +57,20 @@ const jsDist = path.join(jsClient, "dist");
 const jsChild = path.join(jsClient, "perf/lib/replicate.mjs");
 const javaJar = path.join(module, "target/ldes-client.jar");
 const javaTestClasses = path.join(module, "target/test-classes");
-for (const [file, hint] of [
-    [path.join(jsDist, "lib/client.js"), `cd ${jsClient} && npm ci && npm run build`],
-    [jsChild, `the JavaScript ldes-client checkout with its perf/ directory`],
-    [javaJar, "mvn -pl ldes-client -am package -DskipTests"],
-    [path.join(javaTestClasses, "org/openldes/jena/messages/ldes/perf/Replicate.class"), "mvn -pl ldes-client -am package -DskipTests"],
-]) {
+const ldiTarget = path.join(here, "ldi/target");
+const required = {
+    js: [
+        [path.join(jsDist, "lib/client.js"), `cd ${jsClient} && npm ci && npm run build`],
+        [jsChild, `the JavaScript ldes-client checkout with its perf/ directory`],
+    ],
+    java: [
+        [javaJar, "mvn -pl ldes-client -am package -DskipTests"],
+        [path.join(javaTestClasses, "org/openldes/jena/messages/ldes/perf/Replicate.class"), "mvn -pl ldes-client -am package -DskipTests"],
+    ],
+    ldi: [[path.join(ldiTarget, "classes/org/openldes/jena/messages/ldes/perf/ldi/ReplicateLdi.class"), "mvn -f ldes-client/perf/ldi/pom.xml package"]],
+};
+// The fixtures and the server always come from the JavaScript client's perf suite
+for (const [file, hint] of [...required.js.slice(1), ...clients.flatMap((c) => required[c])]) {
     if (!existsSync(file)) throw new Error(`Missing ${file}: build it first (${hint})`);
 }
 const { createFixtures, member, turtlePrefixes } = await import(pathToFileURL(path.join(jsClient, "perf/lib/fixtures.mjs")).href);
@@ -88,7 +102,9 @@ const metadata = {
     members,
     quadsPerMember: 8,
     pageSizes,
+    clients,
     formats,
+    ldiVersion: "3.2.2",
     repeats,
     warmups,
     delayMs,
@@ -100,12 +116,16 @@ const metadata = {
 };
 
 // The server: pre-generated responses, in this process; the clients run in child processes.
+// The LDES 1.0 pages (strings, Turtle) are marked immutable, as a server marks the pages of a closed history: the LDI
+// client only ends a replication when all pages are immutable, and polls mutable pages again.
 let pages;
 const server = http.createServer((request, response) => {
     const page = pages.get(request.url.split("?")[0]);
     if (!page) return response.writeHead(404).end();
-    const { body, type } = typeof page === "string" ? { body: page, type: "text/turtle" } : page;
-    const timer = setTimeout(() => response.writeHead(200, { "content-type": type }).end(body), delayMs);
+    const ldes1 = typeof page === "string";
+    const { body, type } = ldes1 ? { body: page, type: "text/turtle" } : page;
+    const headers = { "content-type": type, ...(ldes1 ? { "cache-control": "public, max-age=604800, immutable" } : {}) };
+    const timer = setTimeout(() => response.writeHead(200, headers).end(body), delayMs);
     response.on("close", () => clearTimeout(timer));
 });
 await new Promise((resolve, reject) => {
@@ -120,21 +140,32 @@ writeFileSync(
     expectedLog,
     '@version "1.2-messages" .\n' + turtlePrefixes + Array.from({ length: members }, (_, i) => member(i)).join("\n@message .\n") + "\n",
 );
+// The same members for the LDI client, which runs on Jena 6.2 without RDF Messages: the prefixes, then one member per line
+const expectedMembers = path.join(scratch, "expected-members.ttl");
+writeFileSync(expectedMembers, turtlePrefixes + Array.from({ length: members }, (_, i) => member(i)).join("\n") + "\n");
 
 function command(scenario, verify) {
     if (scenario.client === "js") {
         if (warm && !verify) return [process.execPath, [path.join(here, "replicate-warm.mjs"), jsDist, scenario.url, String(members), String(iterations)]];
         return [process.execPath, [jsChild, jsDist, scenario.url, "none", String(members), verify ? "verify" : "measure"]];
     }
+    const [classpath, main, expected] =
+        scenario.client === "java"
+            ? [`${javaJar}${path.delimiter}${javaTestClasses}`, "org.openldes.jena.messages.ldes.perf.Replicate", expectedLog]
+            : [
+                  `${path.join(ldiTarget, "classes")}${path.delimiter}${path.join(ldiTarget, "lib/*")}`,
+                  "org.openldes.jena.messages.ldes.perf.ldi.ReplicateLdi",
+                  expectedMembers,
+              ];
     const args = [
         ...(options["java-opts"] ? options["java-opts"].split(" ") : []),
         "-Dorg.slf4j.simpleLogger.defaultLogLevel=error",
         "-cp",
-        `${javaJar}${path.delimiter}${javaTestClasses}`,
-        "org.openldes.jena.messages.ldes.perf.Replicate",
+        classpath,
+        main,
         scenario.url,
         String(members),
-        ...(verify ? ["verify", expectedLog] : ["measure", String(iterations)]),
+        ...(verify ? ["verify", expected] : ["measure", String(iterations)]),
     ];
     return ["java", args];
 }
@@ -194,11 +225,19 @@ try {
         const layout = `${Math.ceil(members / size)} × ${size}`;
         for (const format of formats) {
             const name = `${format}-${i}`;
+            const readers = clients.filter((c) => SUPPORTED[c].includes(format));
+            if (!readers.length) continue;
             const url = await fixtures[format](name, members, size);
+            // The LDI client requires ldes:versionOfPath on the event stream (LDES 1.0 makes it optional): announce one
+            // for all clients. The members have no dcterms:isVersionOf, and no client materialises versions.
+            if (format === "ldes1")
+                for (const [key, page] of pages)
+                    if (key.startsWith(`/${name}/`))
+                        pages.set(key, page.replace("ldes:timestampPath dcterms:created ;", "ldes:timestampPath dcterms:created ; ldes:versionOfPath dcterms:isVersionOf ;"));
             const responseBytes = [...pages]
                 .filter(([key]) => key.startsWith(`/${name}/`))
                 .reduce((sum, [, p]) => sum + Buffer.byteLength(typeof p === "string" ? p : p.body), 0);
-            for (const client of ["js", "java"]) cases.push({ id: `${layout}/${format}/${client}`, layout, format, client, url, responseBytes });
+            for (const client of readers) cases.push({ id: `${layout}/${format}/${client}`, layout, format, client, url, responseBytes });
         }
     }
     console.error(JSON.stringify(metadata));
@@ -243,9 +282,11 @@ try {
     rmSync(scratch, { recursive: true, force: true });
 }
 
+const CLIENT_NAMES = { js: "JavaScript", java: "Java (jena-messages)", ldi: "LDI" };
+const FORMAT_NAMES = { ldes1: "LDES 1.0 Turtle", trig: "LDES 2.0 TriG", jelly: "LDES 2.0 Jelly" };
 function markdown() {
     const lines = [
-        `## LDES 2.0 replication: JavaScript ldes-client vs Java (jena-messages)`,
+        `## LDES replication: JavaScript ldes-client, LDI LDES client, Java (jena-messages)`,
         "",
         (warm
             ? `${members} members of 8 quads, after start-up: ${iterations} replications per process, of which the first ${skipIterations} ` +
@@ -254,19 +295,35 @@ function markdown() {
             : `${members} members of 8 quads, median of ${repeats} rounds after ${warmups} warmup${warmups === 1 ? "" : "s"}, `) +
             `${delayMs} ms delay per request. Node.js ${metadata.node}, Java ${metadata.java}, ${metadata.cpu}.`,
         "",
-        "| Layout | Format | Client | Members/s | Replication | IQR | First member | Process | Peak RSS | Java vs JS |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Layout | Format | Client | Members/s | Replication | IQR | First member | Process | Peak RSS |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ];
     for (const row of result.summary) {
-        const js = result.summary.find((r) => r.layout === row.layout && r.format === row.format && r.client === "js");
-        const ratio = row.client === "java" && js ? `${(js.medianSeconds / row.medianSeconds).toFixed(2)}×` : "";
         lines.push(
-            `| ${row.layout} | ${row.format} | ${row.client} | ${Math.round(row.membersPerSecond).toLocaleString("en")} | ` +
+            `| ${row.layout} | ${FORMAT_NAMES[row.format]} | ${CLIENT_NAMES[row.client]} | ${Math.round(row.membersPerSecond).toLocaleString("en")} | ` +
                 `${row.medianSeconds.toFixed(3)} s | ${row.q1Seconds.toFixed(3)}–${row.q3Seconds.toFixed(3)} s | ` +
-                `${(row.firstMemberSeconds * 1000).toFixed(0)} ms | ${row.processSeconds.toFixed(2)} s | ${row.peakRssMB.toFixed(0)} MB | ${ratio} |`,
+                `${(row.firstMemberSeconds * 1000).toFixed(0)} ms | ${row.processSeconds.toFixed(2)} s | ${row.peakRssMB.toFixed(0)} MB |`,
         );
     }
-    lines.push("", "Java vs JS: the JavaScript median replication time divided by the Java one (above 1× means Java is faster).");
+    // Members per second, one column per client and feed
+    const columns = Object.keys(SUPPORTED)
+        .flatMap((client) => SUPPORTED[client].map((format) => ({ client, format })))
+        .filter(({ client, format }) => result.summary.some((r) => r.client === client && r.format === format));
+    const layouts = [...new Set(result.summary.map((r) => r.layout))];
+    lines.push(
+        "",
+        "Members per second:",
+        "",
+        `| Layout | ${columns.map(({ client, format }) => `${CLIENT_NAMES[client]}, ${FORMAT_NAMES[format]}`).join(" | ")} |`,
+        `| --- | ${columns.map(() => "---:").join(" | ")} |`,
+        ...layouts.map((layout) => {
+            const cell = ({ client, format }) => {
+                const row = result.summary.find((r) => r.layout === layout && r.client === client && r.format === format);
+                return row ? Math.round(row.membersPerSecond).toLocaleString("en") : "";
+            };
+            return `| ${layout} | ${columns.map(cell).join(" | ")} |`;
+        }),
+    );
     if (result.error) lines.push("", `**Error:** ${result.error}`);
     return lines.join("\n");
 }

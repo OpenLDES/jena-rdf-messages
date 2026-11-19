@@ -1,0 +1,15 @@
+# The official LDIO 3.2.2 image with the configuration of the benchmark. measure-ldio.mjs does not need Docker (it runs
+# the same jars from the image with a local JVM, see README.md), but this is how to run the pipeline by hand:
+#
+#   docker compose -f ldes-client/perf/ldio/docker-compose.yml up
+#   curl -X POST -H 'Content-Type: application/yaml' --data-binary @ldes-client/perf/ldio/pipeline.yml \
+#     http://localhost:8080/admin/api/v1/pipeline
+#   curl 'http://localhost:8080/actuator/metrics/ldio_data_out?tag=pipeline.name:replicate-1'
+#
+# with an LDES 1.0 feed at the URL in pipeline.yml. Host networking lets LDIO reach a feed served on the host's loopback.
+services:
+  ldio:
+    image: openldes/ldi-orchestrator:3.2.2
+    network_mode: host
+    volumes:
+      - ./application.yml:/ldio/application.yml:ro

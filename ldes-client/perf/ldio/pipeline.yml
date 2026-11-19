@@ -1,0 +1,14 @@
+# The LDIO pipeline that measure-ldio.mjs creates for every replication, through the admin API
+# (POST /admin/api/v1/pipeline, Content-Type: application/yaml). The LDES client runs with its default settings:
+# Turtle, state in memory, exactly-once filter on, no version materialisation, 5 retries, no rate limit.
+# The no-op output discards every member, so that the pipeline measures the client and LDIO, not a sink.
+# measure-ldio.mjs fills in the name and the URL of the feed.
+name: replicate-1
+input:
+  name: Ldio:LdesClient
+  config:
+    urls:
+      - http://127.0.0.1:8081/ldes1-0/root
+    source-format: text/turtle
+outputs:
+  - name: Ldio:NoopOut

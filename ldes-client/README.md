@@ -98,6 +98,12 @@ and layouts, in fresh Node.js processes. There, the LDES 1.0 (Turtle, TREE) vers
 to 16,000 members/s with the client of the `experiment-ldes-2.0` branch, and at 570 to 13,500 members/s with the
 `main` branch of 5 November 2026 (slowest on large pages); the LDES 2.0 version at 40,000 to 68,000 members/s.
 
-[perf/compare-js.mjs](perf/compare-js.mjs) produces these numbers, side by side with the JavaScript client's LDES 2.0
-numbers on byte-identical feeds; [perf/README.md](perf/README.md) has the method and the comparison. For the speed of the
-parsers alone, see the [parsers benchmark](../parsers/README.md#performance).
+Against the LDES 1.0 client of [Linked Data Interactions](https://github.com/OpenLDES/Linked-Data-Interactions) 3.2.2,
+the client in LDIO's `Ldio:LdesClient`, on the same members published as LDES 1.0: after start-up, this client on
+LDES 2.0 replicates 4.2 to 8.3 times faster in TriG and 5.2 to 9.9 times faster in Jelly (19 November 2026). Most of
+the difference comes from LDES 2.0 itself, which the JavaScript client also reads 3 to 6 times faster than LDES 1.0;
+running the LDI client in an LDIO pipeline adds no measurable cost.
+
+[perf/compare-clients.mjs](perf/compare-clients.mjs) produces these numbers, side by side with the JavaScript client on
+byte-identical feeds, and [perf/ldio/](perf/ldio/) runs the LDIO pipeline; [perf/README.md](perf/README.md) has the
+method and the comparison. For the speed of the parsers alone, see the [parsers benchmark](../parsers/README.md#performance).

@@ -1,0 +1,13 @@
+# LDIO configuration for measure-ldio.mjs: no pipelines at start-up (they are created through the admin API) and the
+# actuator metrics endpoint, through which the number of members out of every pipeline (ldio_data_out) is read.
+# In the official image this file is /ldio/application.yml; see docker-compose.yml.
+orchestrator:
+  name: ldes-client-perf
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - metrics
+          - prometheus
