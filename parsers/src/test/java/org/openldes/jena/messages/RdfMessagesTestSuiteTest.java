@@ -387,7 +387,7 @@ class RdfMessagesTestSuiteTest {
 		Files.writeString(reports.resolve("rdf-messages-conformance.md"), md.toString(), StandardCharsets.UTF_8);
 
 		StringBuilder earl = new StringBuilder();
-		String subject = "<https://github.com/pietercolpaert/jena-messages>";
+		String subject = "<https://github.com/OpenLDES/jena-rdf-messages>";
 		earl.append("@prefix earl: <http://www.w3.org/ns/earl#> .\n@prefix dc: <http://purl.org/dc/terms/> .\n")
 				.append("@prefix doap: <http://usefulinc.com/ns/doap#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n")
 				.append(subject).append(" a earl:Software, earl:TestSubject, doap:Project ;\n")

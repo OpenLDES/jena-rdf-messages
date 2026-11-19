@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" child.project.url.inherit.append.path="false" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>RDF Messages for Apache Jena: message log parsers and writers, an RDF Message type, an LDES 2.0 client and a Linked Data Interactions adapter</description>
-  <url>https://github.com/pietercolpaert/jena-messages</url>
+  <url>https://github.com/OpenLDES/jena-rdf-messages</url>
 
   <groupId>org.openldes</groupId>
   <artifactId>jena-messages</artifactId>
@@ -347,10 +347,11 @@
     </repository>
   </repositories>
 
-  <scm>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false"
+       child.scm.url.inherit.append.path="false">
     <connection>scm:git:${project.scm.url}</connection>
     <developerConnection>scm:git:${project.scm.url}</developerConnection>
-    <url>git@github.com:pietercolpaert/jena-messages.git</url>
+    <url>git@github.com:OpenLDES/jena-rdf-messages.git</url>
     <tag>HEAD</tag>
   </scm>
 
